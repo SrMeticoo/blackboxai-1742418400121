@@ -1,13 +1,24 @@
 <?php
 session_start();
 
-// Database configuration
-define('DB_PATH', __DIR__ . '/../database/raffle.db');
+// Database configuration - These will be set during installation
+define('DB_HOST', '');
+define('DB_NAME', '');
+define('DB_USER', '');
+define('DB_PASS', '');
 
 // Initialize PDO connection
 try {
-    $pdo = new PDO('sqlite:' . DB_PATH);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO(
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
+        DB_PASS,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]
+    );
 } catch (PDOException $e) {
     die('Connection failed: ' . $e->getMessage());
 }
@@ -23,6 +34,3 @@ function requireLogin() {
         exit();
     }
 }
-
-// Create .installed file to prevent reinstallation
-file_put_contents(__DIR__ . '/.installed', date('Y-m-d H:i:s'));
