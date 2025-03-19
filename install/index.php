@@ -29,7 +29,7 @@ if (file_exists('../includes/.installed')) {
                 <div class="text-center mb-8">
                     <i class="fas fa-wrench text-4xl text-blue-600 mb-4"></i>
                     <h1 class="text-2xl font-bold text-gray-800">Instalador del Sistema</h1>
-                    <p class="text-gray-600 mt-2">Configure las credenciales del administrador</p>
+                    <p class="text-gray-600 mt-2">Configure la conexión a la base de datos</p>
                 </div>
 
                 <?php if (isset($_SESSION['error'])): ?>
@@ -40,22 +40,67 @@ if (file_exists('../includes/.installed')) {
                 <?php endif; ?>
 
                 <form action="process.php" method="POST" class="space-y-6">
-                    <div>
-                        <label for="admin_username" class="block text-sm font-medium text-gray-700 mb-1">
-                            Usuario Administrador
-                        </label>
-                        <input type="text" id="admin_username" name="admin_username" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Ingrese el nombre de usuario">
+                    <!-- Database Configuration -->
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-semibold text-gray-700">Configuración de Base de Datos</h2>
+                        
+                        <div>
+                            <label for="db_host" class="block text-sm font-medium text-gray-700 mb-1">
+                                Host de la Base de Datos
+                            </label>
+                            <input type="text" id="db_host" name="db_host" value="localhost" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label for="db_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nombre de la Base de Datos
+                            </label>
+                            <input type="text" id="db_name" name="db_name" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ingrese el nombre de la base de datos">
+                        </div>
+
+                        <div>
+                            <label for="db_user" class="block text-sm font-medium text-gray-700 mb-1">
+                                Usuario de la Base de Datos
+                            </label>
+                            <input type="text" id="db_user" name="db_user" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ingrese el usuario de la base de datos">
+                        </div>
+
+                        <div>
+                            <label for="db_pass" class="block text-sm font-medium text-gray-700 mb-1">
+                                Contraseña de la Base de Datos
+                            </label>
+                            <input type="password" id="db_pass" name="db_pass"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ingrese la contraseña de la base de datos">
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="admin_password" class="block text-sm font-medium text-gray-700 mb-1">
-                            Contraseña
-                        </label>
-                        <input type="password" id="admin_password" name="admin_password" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Ingrese la contraseña">
+                    <!-- Admin Configuration -->
+                    <div class="space-y-4 pt-6 border-t">
+                        <h2 class="text-lg font-semibold text-gray-700">Configuración del Administrador</h2>
+                        
+                        <div>
+                            <label for="admin_username" class="block text-sm font-medium text-gray-700 mb-1">
+                                Usuario Administrador
+                            </label>
+                            <input type="text" id="admin_username" name="admin_username" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ingrese el nombre de usuario del administrador">
+                        </div>
+
+                        <div>
+                            <label for="admin_password" class="block text-sm font-medium text-gray-700 mb-1">
+                                Contraseña del Administrador
+                            </label>
+                            <input type="password" id="admin_password" name="admin_password" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ingrese la contraseña del administrador">
+                        </div>
                     </div>
 
                     <button type="submit"
