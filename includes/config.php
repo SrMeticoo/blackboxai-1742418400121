@@ -1,6 +1,17 @@
 <?php
 session_start();
 
+// Check if system is installed
+if (!file_exists(__DIR__ . '/.installed')) {
+    // If accessing from a subdirectory of install, go up one level
+    if (strpos($_SERVER['PHP_SELF'], '/install/') !== false) {
+        header('Location: index.php');
+    } else {
+        header('Location: install/index.php');
+    }
+    exit();
+}
+
 // Database configuration - These will be set during installation
 define('DB_HOST', '');
 define('DB_NAME', '');
@@ -20,7 +31,10 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die('Connection failed: ' . $e->getMessage());
+    // If we're in the installation process, don't show the error
+    if (strpos($_SERVER['PHP_SELF'], '/install/') === false) {
+        die('Connection failed: ' . $e->getMessage());
+    }
 }
 
 // Helper functions
