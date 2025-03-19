@@ -1,0 +1,15 @@
+# SQLite database
+database/*.db
+
+# Configuration files
+includes/.installed
+
+# IDE and system files
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
