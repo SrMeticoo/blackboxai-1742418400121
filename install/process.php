@@ -3,44 +3,65 @@ session_start();
 
 try {
     // Validate form data
+    $db_host = $_POST['db_host'] ?? '';
+    $db_name = $_POST['db_name'] ?? '';
+    $db_user = $_POST['db_user'] ?? '';
+    $db_pass = $_POST['db_pass'] ?? '';
     $admin_username = $_POST['admin_username'] ?? '';
     $admin_password = $_POST['admin_password'] ?? '';
 
-    if (empty($admin_username) || empty($admin_password)) {
-        throw new Exception('Por favor complete todos los campos');
+    if (empty($db_host) || empty($db_name) || empty($db_user) || empty($admin_username) || empty($admin_password)) {
+        throw new Exception('Por favor complete todos los campos requeridos');
     }
 
-    // Create database directory if it doesn't exist
-    $db_dir = __DIR__ . '/../database';
-    if (!file_exists($db_dir)) {
-        mkdir($db_dir, 0777, true);
-    }
+    // Test database connection
+    try {
+        $pdo = new PDO(
+            "mysql:host=$db_host;charset=utf8mb4",
+            $db_user,
+            $db_pass,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]
+        );
 
-    // Initialize SQLite database
-    $db_path = $db_dir . '/raffle.db';
-    $pdo = new PDO('sqlite:' . $db_path);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // Create database if it doesn't exist
+        $pdo->exec("CREATE DATABASE IF NOT EXISTS `$db_name` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        $pdo->exec("USE `$db_name`");
 
-    // Execute schema
-    $schema = file_get_contents(__DIR__ . '/schema.sqlite');
-    $pdo->exec($schema);
+        // Execute schema
+        $schema = file_get_contents(__DIR__ . '/schema.sql');
+        $pdo->exec($schema);
 
-    // Create admin user
-    $stmt = $pdo->prepare("INSERT INTO admin_users (username, password) VALUES (?, ?)");
-    $stmt->execute([$admin_username, password_hash($admin_password, PASSWORD_DEFAULT)]);
+        // Create admin user
+        $stmt = $pdo->prepare("INSERT INTO admin_users (username, password) VALUES (?, ?)");
+        $stmt->execute([$admin_username, password_hash($admin_password, PASSWORD_DEFAULT)]);
 
-    // Create config file
-    $config_content = <<<PHP
+        // Create config file content
+        $config_content = <<<PHP
 <?php
 session_start();
 
 // Database configuration
-define('DB_PATH', __DIR__ . '/../database/raffle.db');
+define('DB_HOST', '$db_host');
+define('DB_NAME', '$db_name');
+define('DB_USER', '$db_user');
+define('DB_PASS', '$db_pass');
 
 // Initialize PDO connection
 try {
-    \$pdo = new PDO('sqlite:' . DB_PATH);
-    \$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    \$pdo = new PDO(
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
+        DB_PASS,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]
+    );
 } catch (PDOException \$e) {
     die('Connection failed: ' . \$e->getMessage());
 }
@@ -56,27 +77,28 @@ function requireLogin() {
         exit();
     }
 }
-
-// Create .installed file to prevent reinstallation
-file_put_contents(__DIR__ . '/.installed', date('Y-m-d H:i:s'));
 PHP;
 
-    // Create includes directory if it doesn't exist
-    $includes_dir = __DIR__ . '/../includes';
-    if (!file_exists($includes_dir)) {
-        mkdir($includes_dir, 0777, true);
+        // Create includes directory if it doesn't exist
+        $includes_dir = __DIR__ . '/../includes';
+        if (!file_exists($includes_dir)) {
+            mkdir($includes_dir, 0777, true);
+        }
+
+        // Write config file
+        file_put_contents($includes_dir . '/config.php', $config_content);
+
+        // Create .installed file
+        file_put_contents($includes_dir . '/.installed', date('Y-m-d H:i:s'));
+
+        // Redirect to admin login with success message
+        $_SESSION['success'] = 'Sistema instalado exitosamente';
+        header('Location: ../admin/index.php');
+        exit();
+
+    } catch (PDOException $e) {
+        throw new Exception('Error de conexión a la base de datos: ' . $e->getMessage());
     }
-
-    // Write config file
-    file_put_contents($includes_dir . '/config.php', $config_content);
-
-    // Create .installed file
-    file_put_contents($includes_dir . '/.installed', date('Y-m-d H:i:s'));
-
-    // Redirect to admin login with success message
-    $_SESSION['success'] = 'Sistema instalado exitosamente';
-    header('Location: ../admin/index.php');
-    exit();
 
 } catch (Exception $e) {
     $_SESSION['error'] = $e->getMessage();
