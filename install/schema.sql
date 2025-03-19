@@ -4,18 +4,18 @@ CREATE TABLE IF NOT EXISTS admin_users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create system configuration table
 CREATE TABLE IF NOT EXISTS system_config (
     id INT AUTO_INCREMENT PRIMARY KEY,
     country_code VARCHAR(10) NOT NULL DEFAULT '+57',
     whatsapp_number VARCHAR(20) NOT NULL,
-    auto_release_enabled BOOLEAN DEFAULT FALSE,
+    auto_release_enabled BOOLEAN DEFAULT 0,
     auto_release_minutes INT DEFAULT 10,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create banner table
 CREATE TABLE IF NOT EXISTS banner (
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS banner (
     title VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create logo table
 CREATE TABLE IF NOT EXISTS logo (
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS logo (
     image_url VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create raffle items table
 CREATE TABLE IF NOT EXISTS raffle_items (
@@ -43,14 +43,14 @@ CREATE TABLE IF NOT EXISTS raffle_items (
     total_balls INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create balls table
 CREATE TABLE IF NOT EXISTS balls (
     id INT AUTO_INCREMENT PRIMARY KEY,
     item_id INT NOT NULL,
     number VARCHAR(10) NOT NULL,
-    status ENUM('available', 'reserved', 'blocked') DEFAULT 'available',
+    status VARCHAR(20) DEFAULT 'available',
     user_name VARCHAR(100),
     user_lastname VARCHAR(100),
     user_phone VARCHAR(20),
@@ -58,12 +58,13 @@ CREATE TABLE IF NOT EXISTS balls (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (item_id) REFERENCES raffle_items(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_ball_per_item (item_id, number)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    UNIQUE KEY unique_ball (item_id, number),
+    CHECK (status IN ('available', 'reserved', 'blocked'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert default data
 INSERT INTO system_config (country_code, whatsapp_number, auto_release_enabled, auto_release_minutes) 
-VALUES ('+57', '3229009051', false, 10);
+VALUES ('+57', '3229009051', 0, 10);
 
 INSERT INTO banner (image_url, title) 
 VALUES (
